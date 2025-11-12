@@ -1,0 +1,117 @@
+import React, { useState } from 'react';
+import type { SceneObject } from '../../types/scene';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+
+interface SceneControlsPanelProps {
+  sceneName: string;
+  setSceneName: (name: string) => void;
+  addObject: (type: SceneObject['type']) => void;
+  mode: 'translate' | 'rotate' | 'scale';
+  setMode: (mode: 'translate' | 'rotate' | 'scale') => void;
+  saveScene: () => Promise<void>;
+  selectedObjectId: number | null;
+  changeObjectColor: (id: number, color: string) => void;
+  selectedObjectColor: string;
+}
+
+const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
+  sceneName,
+  setSceneName,
+  addObject,
+  mode,
+  setMode,
+  saveScene,
+  selectedObjectId,
+  changeObjectColor,
+  selectedObjectColor,
+}) => {
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <div className="controls-panel bg-gray-50 text-white shadow-xl rounded-2xl p-5 w-full md:w-80 space-y-6">
+      <div className="flex justify-between items-center cursor-pointer" onClick={() => setCollapsed(!collapsed)}>
+        <h2 className="text-2xl font-bold border-b pb-2 flex-1">Scene Constructor</h2>
+        {collapsed ? <ChevronDown className="w-5 h-5 text-gray-300" /> : <ChevronUp className="w-5 h-5 text-gray-300" />}
+      </div>
+
+      {!collapsed && (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h3 className="font-semibold">Add Object</h3>
+            <div className="flex gap-3">
+              {['Cube', 'Sphere', 'Cylinder'].map(type => (
+                <button
+                  key={type}
+                  onClick={() => addObject(type as SceneObject['type'])}
+                  className="flex-1 py-2 px-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:scale-105 transform transition"
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold">Tool</h3>
+            <div className="flex gap-3">
+              {['translate', 'rotate', 'scale'].map(tool => (
+                <button
+                  key={tool}
+                  onClick={() => setMode(tool as 'translate' | 'rotate' | 'scale')}
+                  disabled={mode === tool}
+                  className={`flex-1 py-2 px-3 rounded-xl font-medium transition 
+                    ${mode === tool
+                      ? 'bg-gray-400 text-white cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-400 to-blue-600 text-white hover:bg-gradient-to-l'}
+                  `}
+                >
+                  {tool.charAt(0).toUpperCase() + tool.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold">Object Properties</h3>
+            <label className="flex flex-col text-gray-600 text-sm">
+              Color:
+              <input
+                type="color"
+                value={selectedObjectColor}
+                onChange={e => {
+                  if (selectedObjectId !== null) changeObjectColor(selectedObjectId, e.target.value);
+                }}
+                disabled={selectedObjectId === null}
+                className={`w-full h-10 mt-1 rounded-xl border-2 ${
+                  selectedObjectId === null ? 'cursor-not-allowed opacity-50 border-gray-300' : 'cursor-pointer border-indigo-400'
+                }`}
+              />
+            </label>
+            {selectedObjectId === null && (
+              <p className="text-xs mt-1">Select an object to edit its properties.</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold">Save Scene</h3>
+            <input
+              type="text"
+              value={sceneName}
+              onChange={e => setSceneName(e.target.value)}
+              placeholder="Scene Name"
+              className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 text-white"
+            />
+            <button
+              onClick={saveScene}
+              className="w-full py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:scale-105 transform transition"
+            >
+              Save Scene
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SceneControlsPanel;
