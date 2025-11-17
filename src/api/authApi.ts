@@ -1,3 +1,4 @@
+import type { User } from '../types/user';
 import { apiClient } from './';
 
 export const authApi = {
@@ -11,8 +12,9 @@ export const authApi = {
         await apiClient.post('/auth/register', { email, password });
     },
 
-    getMe: async (): Promise<{ id: string; email: string }> => {
-        const response = await apiClient.get<{ id: string; email: string }>('/auth/me');
+    getMe: async (): Promise<User> => {
+        const response = await apiClient.get<User>('/auth/me');
+        console.log('Fetched user data:', response.data);
         return response.data;
     }
 }

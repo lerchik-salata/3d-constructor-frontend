@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from "./components/common/ProtectedRoute";
 import { AuthPage } from "./pages/AuthPage";
 import { LogoutHeader } from "./components/auth/LogoutHeader";
+import { AdminPage } from "./pages/AdminPage";
 
 function App() {
   return (
@@ -16,6 +17,13 @@ function App() {
               <ProtectedRoute>
                 <LogoutHeader>
                   <ProjectsPage />
+                </LogoutHeader>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <LogoutHeader>
+                  <AdminPage />
                 </LogoutHeader>
               </ProtectedRoute>
             } />
