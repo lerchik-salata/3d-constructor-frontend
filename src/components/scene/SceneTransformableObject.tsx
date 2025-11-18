@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { TransformControls } from '@react-three/drei';
 import { useThree, type ThreeEvent} from '@react-three/fiber';
 import * as THREE from 'three';
+import { useOrbitControls } from '../../context/OrbitControlsContext';
 
 interface SceneTransformableObjectProps extends React.ComponentPropsWithoutRef<'mesh'> {
   id: number;
@@ -30,6 +31,7 @@ const SceneTransformableObject: React.FC<SceneTransformableObjectProps> = ({
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { gl } = useThree();
+   const { controlsRef } = useOrbitControls();
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
@@ -70,10 +72,14 @@ const SceneTransformableObject: React.FC<SceneTransformableObjectProps> = ({
         <TransformControls
           object={meshRef.current}
           mode={mode}
-          onMouseUp={handleObjectChange}
+          onMouseUp={() => {
+            handleObjectChange();
+            if (controlsRef.current) controlsRef.current.enabled = true;
+          }}
           onMouseDown={() => {
             onSelect(id);
             gl.domElement.style.pointerEvents = 'none';
+            if (controlsRef.current) controlsRef.current.enabled = false;
           }}
         />
       )}
