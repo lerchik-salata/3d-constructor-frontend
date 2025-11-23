@@ -95,6 +95,22 @@ export class SceneManager {
         console.log('Added object:', newObject);
         return newObject;
     }
+
+    copyObject(originalId: number): SceneObject | null {
+        const original = this.objects.find(o => o.id === originalId);
+        if (!original) return null;
+
+        const copy: SceneObject = {
+            ...original,
+            id: this.nextId++,
+        };
+        this.objects.push(copy);
+        return copy;
+    }
+
+    getNextId(): number {
+        return this.nextId;
+    }
     
     updateObjectTransform(id: number, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number]): void {
         const obj = this.objects.find(o => o.id === id);

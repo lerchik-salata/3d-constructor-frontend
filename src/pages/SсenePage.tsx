@@ -16,6 +16,7 @@ import type { ProjectSettings } from '../types/project';
 import { CommandManager } from '../services/CommandManager';
 import { ChangeColorCommand } from '../services/commands/ChangeColorCommand';
 import { AddObjectCommand } from '../services/commands/AddObjectCommand';
+import { CopyObjectCommand } from '../services/commands/CopyObjectCommand';
 import { RemoveObjectCommand } from '../services/commands/RemoveObjectCommand';
 import { ChangeTextureCommand } from '../services/commands/ChangeTextureCommand';
 
@@ -149,6 +150,15 @@ const SceneEditorPage: React.FC = () => {
         setObjects([...sceneManager.getObjects()]);
     };
 
+    const handleCopyObject = (id: number) => {
+        const original = sceneManager.getObjects().find(obj => obj.id === id);
+        if (!original) return;
+
+        const cmd = new CopyObjectCommand(sceneManager, original);
+        commandManager.executeCommand(cmd);
+        setObjects([...sceneManager.getObjects()]);
+    };
+
     const handleRemoveObject = (id: number) => {
         if (id === null) return;
 
@@ -211,6 +221,7 @@ const SceneEditorPage: React.FC = () => {
                 setSceneName={setSceneName}
                 addObject={handleAddObject}
                 removeObject={handleRemoveObject}
+                copyObject={handleCopyObject}
                 mode={mode}
                 setMode={setMode}
                 saveScene={handleSaveScene}

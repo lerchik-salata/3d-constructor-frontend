@@ -1,6 +1,8 @@
+export type SceneObjectType = 'Cube' | 'Sphere' | 'Cylinder';
+
 export interface SceneObject {
   id: number;
-  type: 'Cube' | 'Sphere' | 'Cylinder';
+  type: SceneObjectType;
   position: [number, number, number];
   rotation: [number, number, number];
   scale: [number, number, number];
