@@ -56,6 +56,20 @@ export class SceneManager {
         }));
     }
 
+    getObject(id: number): SceneObject | undefined {
+        const obj = this.objects.find(o => o.id === id);
+        if (!obj) return undefined;
+
+        return {
+            ...obj,
+            textureUrl: this.getTextureUrl(obj.textureId)
+        };
+    }
+
+    removeObject(id: number): void {
+        this.objects = this.objects.filter(o => o.id !== id);
+    }
+
     setObjects(newObjects: SceneObject[]) {
         this.objects = [...newObjects];
         this.nextId = newObjects.length ? Math.max(...newObjects.map(o => o.id)) + 1 : 1;

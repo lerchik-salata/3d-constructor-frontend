@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Scene from '../components/scene/Scene';
 import SceneObjectsRenderer from '../components/scene/SceneObjectsRenderer';
 import SceneControlsPanel from '../components/scene/SceneControlsPanel';
+import SceneEditorHeader from '../components/scene/SceneEditorHeader';
 import { SceneManager } from '../services/SceneManager';
 import { ProjectManager } from '../services/ProjectManager';
 import type { SceneObject } from '../types/scene';
@@ -12,6 +13,10 @@ import { textureApi } from '../api/textureApi';
 import type { Texture } from '../types/texture';
 import SceneSettingsPanel from '../components/scene/SceneSettingsPanel';
 import type { ProjectSettings } from '../types/project';
+import { CommandManager } from '../services/CommandManager';
+import { ChangeColorCommand } from '../services/commands/ChangeColorCommand';
+import { AddObjectCommand } from '../services/commands/AddObjectCommand';
+import { ChangeTextureCommand } from '../services/commands/ChangeTextureCommand';
 
 const initialSettings: ProjectSettings = {
     preset: 'city',
@@ -40,6 +45,8 @@ const SceneEditorPage: React.FC = () => {
     const [mode, setMode] = useState<'translate' | 'rotate' | 'scale'>('translate');
     const [sceneName, setSceneName] = useState<string>(isNewScene ? 'New Scene' : 'Loading...');
     const { showMessage } = useSnackbar();
+
+    const [commandManager] = useState(() => new CommandManager(5));
 
     useEffect(() => {
         const loadInitialScene = async () => {
@@ -120,21 +127,25 @@ const SceneEditorPage: React.FC = () => {
     const handleChangeColor = (id: number, color: string) => {
         sceneManager.updateObjectColor(id, color); 
         setObjects([...sceneManager.getObjects()]);
+        // const cmd = new ChangeColorCommand(sceneManager, id, color);
+        // commandManager.executeCommand(cmd);
+        // setObjects([...sceneManager.getObjects()]);
     };
 
     const currentSelectedColor = objects.find(obj => obj.id === selectedId)?.color || '#FFFFFF';
 
     const handleChangeTexture = (id: number, texture: number | null) => {
-        sceneManager.updateObjectTexture(id, texture);
+        const cmd = new ChangeTextureCommand(sceneManager, id, texture);
+        commandManager.executeCommand(cmd);
         setObjects([...sceneManager.getObjects()]);
     }
 
     const currentSelectedTexture = objects.find(obj => obj.id === selectedId)?.textureId || null;
 
     const handleAddObject = (type: SceneObject['type']) => {
-        const newObj = sceneManager.addObject(type);
+        const cmd = new AddObjectCommand(sceneManager, type);
+        commandManager.executeCommand(cmd);
         setObjects([...sceneManager.getObjects()]);
-        setSelectedId(newObj.id);
     };
 
     const handleUpdateTransform = (
@@ -167,14 +178,12 @@ const SceneEditorPage: React.FC = () => {
 
     return (
         <div>
-          <header className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 rounded-b-lg shadow-md mb-4">
-            <div className="text-lg md:text-xl font-bold">
-                Project ID: <span className="font-mono">{currentProjectId}</span>
-            </div>
-            <div className="text-md md:text-lg mt-2 md:mt-0">
-                Editing: <span className="font-semibold">{sceneName}</span>
-            </div>
-        </header>
+            <SceneEditorHeader
+                projectId={currentProjectId}
+                sceneName={sceneName}
+                commandManager={commandManager}
+                onUpdateObjects={() => setObjects([...sceneManager.getObjects()])}
+            />
 
             <Scene settings={sceneSettings}>
                 <SceneObjectsRenderer
