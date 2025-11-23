@@ -70,6 +70,12 @@ export class SceneManager {
         this.objects = this.objects.filter(o => o.id !== id);
     }
 
+    insertObjectAt(obj: SceneObject, index: number) {
+        const objects = this.getObjects();
+        objects.splice(index, 0, obj);
+        this.setObjects(objects);
+    }
+
     setObjects(newObjects: SceneObject[]) {
         this.objects = [...newObjects];
         this.nextId = newObjects.length ? Math.max(...newObjects.map(o => o.id)) + 1 : 1;

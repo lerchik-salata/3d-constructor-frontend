@@ -7,6 +7,7 @@ interface SceneControlsPanelProps {
   sceneName: string;
   setSceneName: (name: string) => void;
   addObject: (type: SceneObject['type']) => void;
+  removeObject?: (id: number) => void;
   mode: 'translate' | 'rotate' | 'scale';
   setMode: (mode: 'translate' | 'rotate' | 'scale') => void;
   saveScene: () => Promise<void>;
@@ -22,6 +23,7 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
   sceneName,
   setSceneName,
   addObject,
+  removeObject,
   mode,
   setMode,
   saveScene,
@@ -76,6 +78,18 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold">Copy/Remove Object</h3>
+            <button
+              onClick={() => {
+                if (selectedObjectId !== null) removeObject?.(selectedObjectId);
+              }}
+              className="w-full py-2 bg-red-500 text-white font-semibold rounded-xl hover:scale-105 transform transition"
+            >
+              Remove
+            </button>
           </div>
 
           <div className="space-y-2">
