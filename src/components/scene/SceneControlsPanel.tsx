@@ -111,7 +111,7 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
                   changeObjectTexture(selectedObjectId, value);
                 }
               }}
-              className="w-full px-2 py-2 rounded-xl text-black border border-gray-400"
+              className="w-full px-2 py-2 rounded-xl text-white border border-gray-400"
             >
               <option value="">No texture</option>
 

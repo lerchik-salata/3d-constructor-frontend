@@ -4,32 +4,36 @@ import Scene from '../components/scene/Scene';
 import SceneObjectsRenderer from '../components/scene/SceneObjectsRenderer';
 import SceneControlsPanel from '../components/scene/SceneControlsPanel';
 import { SceneManager } from '../services/SceneManager';
+import { ProjectManager } from '../services/ProjectManager';
 import type { SceneObject } from '../types/scene';
 import { useSnackbar } from '../context/SnackbarContext';
+import { projectsApi } from '../api/projectsApi';
 import { textureApi } from '../api/textureApi';
 import type { Texture } from '../types/texture';
+import SceneSettingsPanel from '../components/scene/SceneSettingsPanel';
+import type { ProjectSettings } from '../types/project';
 
-const initialObjects: SceneObject[] = [
-  {
-    id: 1,
-    type: 'Cube',
-    position: [-1.5, 0.5, 0],
-    rotation: [0, 0, 0],
-    scale: [1, 1, 1],
-    color: '#FF69B4',
-    textureId: null,
-  },
-];
+const initialSettings: ProjectSettings = {
+    preset: 'city',
+    presetBlur: 0.5,
+    backgroundColor: '#222222',
+    sceneColor: '#FFFFFF',
+    lightIntensity: 1,
+    directionalLightPosition: [0, 1, 0],
+};
 
 const SceneEditorPage: React.FC = () => {
     const { projectId, sceneId } = useParams<{ projectId: string, sceneId: string }>(); 
     const navigate = useNavigate();
+
+    const [sceneSettings, setSceneSettings] = useState<ProjectSettings>(initialSettings);
 
     const currentProjectId = projectId ? parseInt(projectId) : null;
     const currentSceneId = sceneId ? parseInt(sceneId) : null;
     const isNewScene = !currentSceneId; 
 
     const [sceneManager] = useState(() => new SceneManager([])); 
+    const [projectsManager] = useState(() => new ProjectManager());
     const [objects, setObjects] = useState<SceneObject[]>([]); 
     const [textures, setTextures] = useState<Texture[]>([]);
     const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -44,13 +48,17 @@ const SceneEditorPage: React.FC = () => {
                 return;
             }
 
-           const loadedTextures = await textureApi.getAllTextures();
+            const loadedTextures = await textureApi.getAllTextures();
             setTextures(loadedTextures);
             sceneManager.setTextures(loadedTextures);
 
+            const loadedProject = await projectsApi.getProjectById(currentProjectId);
+            setSceneSettings(loadedProject.settings);
+            console.log('Loaded project settings:', loadedProject);
+
             if (isNewScene) {
-                sceneManager.setObjects(initialObjects);
-                setObjects(initialObjects);
+                sceneManager.setObjects([]);
+                setObjects([]);
                 setSceneName('New Scene');
                 showMessage('Started working on new scene.', 'info');
             } else {
@@ -68,8 +76,8 @@ const SceneEditorPage: React.FC = () => {
                 } catch (err: unknown) {
                     console.error(err);
                     showMessage(`Error loading scene ID ${currentSceneId}`, 'error');
-                    sceneManager.setObjects(initialObjects);
-                    setObjects(initialObjects);
+                    sceneManager.setObjects([]);
+                    setObjects([]);
                     setSceneName(`Error loading ID ${currentSceneId}`);
                 }
             }
@@ -139,6 +147,24 @@ const SceneEditorPage: React.FC = () => {
         setObjects([...sceneManager.getObjects()]);
     };
 
+    const handleUpdateProjectSettings = async (newSettings: ProjectSettings) => {
+        if (!currentProjectId) return;
+
+        try {
+            showMessage('Saving project settings...', 'info');
+
+            const updatedProject = await projectsManager.updateProject(currentProjectId, {
+                settings: newSettings
+            });
+
+            setSceneSettings(updatedProject.settings);
+            showMessage('Project settings saved', 'success');
+        } catch (err: unknown) {
+            console.error(err);
+            showMessage(err instanceof Error ? err.message : 'Error saving project settings', 'error');
+        }
+    };
+
     return (
         <div>
           <header className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 rounded-b-lg shadow-md mb-4">
@@ -150,7 +176,7 @@ const SceneEditorPage: React.FC = () => {
             </div>
         </header>
 
-            <Scene>
+            <Scene settings={sceneSettings}>
                 <SceneObjectsRenderer
                     objects={objects}
                     selectedId={selectedId}
@@ -158,10 +184,6 @@ const SceneEditorPage: React.FC = () => {
                     setSelectedId={setSelectedId}
                     updateObjectTransform={handleUpdateTransform}
                 />
-                <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-                    <planeGeometry args={[10, 10]} />
-                    <meshStandardMaterial color="#888" />
-                </mesh>
             </Scene>
 
             <SceneControlsPanel
@@ -178,6 +200,8 @@ const SceneEditorPage: React.FC = () => {
                 changeObjectTexture={handleChangeTexture}
                 selectedObjectTexture={currentSelectedTexture}
             />
+
+            <SceneSettingsPanel settings={sceneSettings} onChange={setSceneSettings} onSave={handleUpdateProjectSettings} />
         </div>
     );
 };

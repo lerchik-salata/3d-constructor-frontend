@@ -13,4 +13,8 @@ export interface Project {
 export interface ProjectSettings {
   backgroundColor: string;
   lightIntensity: number;
+  directionalLightPosition: [number, number, number];
+  preset: 'city' | 'nature' | 'space';
+  presetBlur: number;
+  sceneColor: string;
 }

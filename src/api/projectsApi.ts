@@ -7,6 +7,12 @@ export interface CreateProjectDto {
     settings?: ProjectSettings;
 }
 
+export interface UpdateProjectDto {
+    name?: string;
+    description?: string;
+    settings?: ProjectSettings;
+}
+
 export const projectsApi =  {
 
     getAllProjects: async (): Promise<Project[]> => {
@@ -32,8 +38,8 @@ export const projectsApi =  {
     deleteProject: async (projectId: number): Promise<void> => {
         await apiClient.delete(`/projects/${projectId}`);
     },
-    
-    updateProject: async (projectId: number, projectData: CreateProjectDto): Promise<Project> => {
+
+    updateProject: async (projectId: number, projectData: UpdateProjectDto): Promise<Project> => {
         const response = await apiClient.put<Project>(`/projects/${projectId}`, projectData);
         return response.data;
     }

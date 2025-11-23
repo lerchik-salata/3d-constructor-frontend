@@ -1,5 +1,5 @@
 import { projectsApi } from '../api/projectsApi';
-import type { CreateProjectDto } from '../api/projectsApi';
+import type { CreateProjectDto, UpdateProjectDto } from '../api/projectsApi';
 import type { Project } from '../types/project';
 
 export class ProjectManager {
@@ -15,7 +15,7 @@ export class ProjectManager {
     return await projectsApi.createProject(data);
   }
 
-  async updateProject(id: number, data: CreateProjectDto): Promise<Project> {
+  async updateProject(id: number, data: UpdateProjectDto): Promise<Project> {
     return await projectsApi.updateProject(id, data);
   }
 

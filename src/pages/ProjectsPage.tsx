@@ -1,17 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProjectManager } from '../services/ProjectManager';
-import type { Project, ProjectSettings } from '../types/project';
+import type { Project } from '../types/project';
 import { useSnackbar } from '../context/SnackbarContext';
 import ProjectList from '../components/projects/ProjectList';
 import ProjectForm from '../components/projects/ProjectForm';
 import { motion } from 'framer-motion';
 import { FolderPlus } from 'lucide-react';
-
-const initialSettings: ProjectSettings = {
-  backgroundColor: '#000000',
-  lightIntensity: 1.0,
-};
 
 export const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -44,8 +39,7 @@ export const ProjectsPage: React.FC = () => {
     try {
       const newProject = await projectManager.createProject({
         name,
-        description: description || 'New Project.',
-        settings: initialSettings,
+        description: description || 'New Project.'
       });
       setProjects(prev => [...prev, newProject]);
       showMessage(`Project "${newProject.name}" created successfully!`, 'success');
