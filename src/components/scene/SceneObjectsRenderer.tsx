@@ -15,10 +15,12 @@ interface Props {
 
 const ObjectMap = { Cube, Sphere, Cylinder };
 
+
 const SceneObjectsRenderer: React.FC<Props> = ({ objects, selectedId, mode, setSelectedId, updateObjectTransform }) => {
   return (
     <>
       {objects.map(obj => {
+        console.log('Renderer object:', obj);
         const Shape = ObjectMap[obj.type];
         if (!Shape) return null;
         return (
@@ -33,7 +35,7 @@ const SceneObjectsRenderer: React.FC<Props> = ({ objects, selectedId, mode, setS
             onSelect={setSelectedId}
             onUpdateTransform={updateObjectTransform}
           >
-            <Shape color={obj.color} />
+            <Shape color={obj.color} textureUrl={obj.textureUrl} />
           </TransformableObject>
         );
       })}

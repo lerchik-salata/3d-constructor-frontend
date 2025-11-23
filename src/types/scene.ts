@@ -5,7 +5,8 @@ export interface SceneObject {
   rotation: [number, number, number];
   scale: [number, number, number];
   color: string;
-  texture?: string;
+  textureId: number | null;
+  textureUrl?: string;
 }
 
 export interface LoadedScene {

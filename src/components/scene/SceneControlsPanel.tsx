@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { SceneObject } from '../../types/scene';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import type { Texture } from '../../types/texture';
 
 interface SceneControlsPanelProps {
   sceneName: string;
@@ -12,6 +13,9 @@ interface SceneControlsPanelProps {
   selectedObjectId: number | null;
   changeObjectColor: (id: number, color: string) => void;
   selectedObjectColor: string;
+  textures: Texture[];
+  changeObjectTexture: (id: number, textureId: number | null) => void;
+  selectedObjectTexture: number | null;
 }
 
 const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
@@ -24,6 +28,9 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
   selectedObjectId,
   changeObjectColor,
   selectedObjectColor,
+  textures,
+  changeObjectTexture,
+  selectedObjectTexture,
 }) => {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -90,6 +97,30 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
             {selectedObjectId === null && (
               <p className="text-xs mt-1">Select an object to edit its properties.</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold">Texture</h3>
+
+            <select
+              value={selectedObjectTexture ?? ''}
+              disabled={selectedObjectId === null}
+              onChange={(e) => {
+                if (selectedObjectId !== null) {
+                  const value = e.target.value ? Number(e.target.value) : null;
+                  changeObjectTexture(selectedObjectId, value);
+                }
+              }}
+              className="w-full px-2 py-2 rounded-xl text-black border border-gray-400"
+            >
+              <option value="">No texture</option>
+
+              {textures.map(tex => (
+                <option key={tex.id} value={tex.id}>
+                  {tex.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-2">

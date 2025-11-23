@@ -1,5 +1,6 @@
 import type { SceneObject, SceneObjectCSharp, LoadedScene } from '../types/scene';
 import { sceneApi } from '../api/sceneApi';
+import type { Texture } from '../types/texture';
 
 interface CreateSceneData {
     Name: string;
@@ -9,12 +10,28 @@ interface CreateSceneData {
 export class SceneManager {
     private objects: SceneObject[];
     private nextId: number;
+    private availableTextures: Texture[] = [];
 
     constructor(initialObjects: SceneObject[] = []) {
         this.objects = [];
         this.nextId = 1;
         this.setObjects(initialObjects); 
     }
+
+    setTextures(textures: Texture[]) {
+        this.availableTextures = textures;
+    }
+    
+    getTextureUrl(textureId: number | null): string | undefined {
+        if (!textureId) return undefined;
+
+        const fullUrl = this.availableTextures.find(t => t.id == textureId)?.imageUrl;
+        if (!fullUrl) return undefined;
+
+        const match = fullUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        return match ? match[1] : undefined;
+    }
+
 
     async getScenesByProjectId(projectId: number): Promise<LoadedScene[]> {
         return await sceneApi.getScenesByProjectId(projectId);
@@ -33,7 +50,10 @@ export class SceneManager {
     }
 
     getObjects(): SceneObject[] {
-        return this.objects;
+         return this.objects.map(obj => ({
+            ...obj,
+            textureUrl: this.getTextureUrl(obj.textureId)
+        }));
     }
 
     setObjects(newObjects: SceneObject[]) {
@@ -49,6 +69,7 @@ export class SceneManager {
             rotation: [0, 0, 0],
             scale: [1, 1, 1],
             color: type === 'Cube' ? 'hotpink' : type === 'Sphere' ? '#3C78D8' : '#6AA84F',
+            textureId: null,
         };
         this.objects.push(newObject);
         console.log('Added object:', newObject);
@@ -71,6 +92,13 @@ export class SceneManager {
         }
     }
 
+    updateObjectTexture(id: number, textureId: number | null): void {
+        const obj = this.objects.find(o => o.id === id);
+        if (obj) {
+            obj.textureId = textureId;
+        }
+    }
+
     mapObjectsToCSharpFormat(): SceneObjectCSharp[] {
         return this.objects.map(obj => ({
             Id: obj.id, 
@@ -85,6 +113,7 @@ export class SceneManager {
             ScaleY: obj.scale[1],
             ScaleZ: obj.scale[2],
             Color: obj.color,
+            TextureId: obj.textureId != null ? String(obj.textureId) : null,
         }));
     }
 
@@ -98,11 +127,13 @@ export class SceneManager {
             rotation: [obj.rotationX, obj.rotationY, obj.rotationZ] as [number, number, number],
             scale: [obj.scaleX, obj.scaleY, obj.scaleZ] as [number, number, number],
             color: obj.color,
+            textureId: obj.hasOwnProperty('textureId') ? (obj as any).textureId : null,
         }));
 
         this.setObjects(newObjects); 
+        console.log('Loaded scene objects:', this.getObjects());
         return {
-            objects: this.objects,
+            objects: this.getObjects(),
             name: loadedScene.name 
         };
     }

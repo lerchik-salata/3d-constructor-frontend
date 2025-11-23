@@ -6,6 +6,8 @@ import SceneControlsPanel from '../components/scene/SceneControlsPanel';
 import { SceneManager } from '../services/SceneManager';
 import type { SceneObject } from '../types/scene';
 import { useSnackbar } from '../context/SnackbarContext';
+import { textureApi } from '../api/textureApi';
+import type { Texture } from '../types/texture';
 
 const initialObjects: SceneObject[] = [
   {
@@ -15,6 +17,7 @@ const initialObjects: SceneObject[] = [
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     color: '#FF69B4',
+    textureId: null,
   },
 ];
 
@@ -28,6 +31,7 @@ const SceneEditorPage: React.FC = () => {
 
     const [sceneManager] = useState(() => new SceneManager([])); 
     const [objects, setObjects] = useState<SceneObject[]>([]); 
+    const [textures, setTextures] = useState<Texture[]>([]);
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [mode, setMode] = useState<'translate' | 'rotate' | 'scale'>('translate');
     const [sceneName, setSceneName] = useState<string>(isNewScene ? 'New Scene' : 'Loading...');
@@ -39,7 +43,11 @@ const SceneEditorPage: React.FC = () => {
                 showMessage('Error: Project ID is missing from URL.', 'error');
                 return;
             }
-            
+
+           const loadedTextures = await textureApi.getAllTextures();
+            setTextures(loadedTextures);
+            sceneManager.setTextures(loadedTextures);
+
             if (isNewScene) {
                 sceneManager.setObjects(initialObjects);
                 setObjects(initialObjects);
@@ -51,6 +59,7 @@ const SceneEditorPage: React.FC = () => {
                     const { objects: loadedObjects, name } = await sceneManager.loadScene(currentSceneId!, currentProjectId);
                     
                     setObjects([...loadedObjects]);
+                    console.log('Scene objects after load:', sceneManager.getObjects());
                     setSelectedId(null);
 
                     setSceneName(name);
@@ -107,6 +116,13 @@ const SceneEditorPage: React.FC = () => {
 
     const currentSelectedColor = objects.find(obj => obj.id === selectedId)?.color || '#FFFFFF';
 
+    const handleChangeTexture = (id: number, texture: number | null) => {
+        sceneManager.updateObjectTexture(id, texture);
+        setObjects([...sceneManager.getObjects()]);
+    }
+
+    const currentSelectedTexture = objects.find(obj => obj.id === selectedId)?.textureId || null;
+
     const handleAddObject = (type: SceneObject['type']) => {
         const newObj = sceneManager.addObject(type);
         setObjects([...sceneManager.getObjects()]);
@@ -158,6 +174,9 @@ const SceneEditorPage: React.FC = () => {
                 selectedObjectId={selectedId}
                 changeObjectColor={handleChangeColor}
                 selectedObjectColor={currentSelectedColor}
+                textures={textures}
+                changeObjectTexture={handleChangeTexture}
+                selectedObjectTexture={currentSelectedTexture}
             />
         </div>
     );

@@ -27,6 +27,13 @@ export const textureApi = {
 
     deleteTexture: async (textureId: number): Promise<void> => {
         await apiClient.delete(`/texture/${textureId}`);
+    },
+
+    getTextureStream: async (textureId: string): Promise<Blob> => {
+        const response = await apiClient.get<Blob>(`/proxy/texture/${textureId}`, {
+            responseType: 'blob',
+        });
+        return response.data;
     }
 
 }
