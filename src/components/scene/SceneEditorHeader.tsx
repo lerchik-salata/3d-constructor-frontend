@@ -1,8 +1,10 @@
 import React from 'react';
 import type { CommandManager } from '../../services/CommandManager';
+import { sceneApi } from '../../api/sceneApi';
 
 interface SceneEditorHeaderProps {
     projectId: number | null;
+    sceneId: number | null;
     sceneName: string;
     commandManager: CommandManager;
     onUpdateObjects: () => void;
@@ -10,10 +12,31 @@ interface SceneEditorHeaderProps {
 
 const SceneEditorHeader: React.FC<SceneEditorHeaderProps> = ({
     projectId,
+    sceneId,
     sceneName,
     commandManager,
     onUpdateObjects,
 }) => {
+
+    const handleExport = async () => {
+        if (!projectId || !sceneId) return;
+        try {
+            const sceneJson = await sceneApi.exportScene(sceneId, projectId);
+            console.log('Exported scene JSON:', sceneJson);
+            const blob = new Blob([JSON.stringify(sceneJson, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${sceneName}.json`;
+            a.click();
+
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Error exporting scene:', err);
+        }
+    };
+
     return (
         <header className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 rounded-b-lg shadow-md mb-4">
             <div className="text-lg md:text-xl font-bold">
@@ -36,6 +59,12 @@ const SceneEditorHeader: React.FC<SceneEditorHeaderProps> = ({
                     className="bg-white text-purple-700 font-semibold px-4 py-2 rounded-xl shadow hover:bg-purple-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     Redo
+                </button>
+                <button
+                    onClick={handleExport}
+                    className="bg-white text-purple-700 font-semibold px-4 py-2 rounded-xl shadow hover:bg-purple-100 transition-colors"
+                >
+                    Export
                 </button>
             </div>
         </header>

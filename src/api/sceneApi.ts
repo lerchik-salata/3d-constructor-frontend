@@ -30,5 +30,19 @@ export const sceneApi =  {
 
     deleteScene: async (sceneId: number, projectId: number): Promise<void> => {
         await apiClient.delete(`/projects/${projectId}/scenes/${sceneId}`);
-    }
+    },
+
+    exportScene: async (sceneId: number, projectId: number): Promise<string> => {
+        const response = await apiClient.get<string>(`/projects/${projectId}/scenes/${sceneId}/export`);
+        return response.data; 
+    },
+
+    importSceneJson: async (sceneData: object, projectId: number): Promise<LoadedScene> => {
+        const response = await apiClient.post<LoadedScene>(
+            `/projects/${projectId}/scenes/import`,
+            sceneData,
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+        return response.data;
+    },
 }

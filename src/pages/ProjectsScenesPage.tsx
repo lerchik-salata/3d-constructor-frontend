@@ -7,6 +7,7 @@ import type { LoadedScene } from '../types/scene';
 import type { Project } from '../types/project';
 import SceneList from '../components/projects/SceneList';
 import SceneActions from '../components/projects/SceneActions';
+import { sceneApi } from '../api/sceneApi';
 
 export const ProjectScenesPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -82,6 +83,26 @@ export const ProjectScenesPage: React.FC = () => {
     }
   };
 
+const handleImportScene = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!id || !event.target.files || event.target.files.length === 0) return;
+
+    const file = event.target.files[0];
+
+    try {
+        const text = await file.text();
+        const sceneData = JSON.parse(text); 
+
+        const importedScene = await sceneApi.importSceneJson(sceneData, id);
+        setScenes(prev => [...prev, importedScene]);
+        showMessage(`Scene "${importedScene.name}" imported successfully!`, 'success');
+        navigate(`/projects/${id}/scenes/${importedScene.id}/edit`);
+    } catch (err) {
+        console.error(err);
+        showMessage('Error importing scene. Make sure the file is valid JSON.', 'error');
+    }
+};
+
+
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-64 text-gray-300 text-lg animate-pulse">
@@ -127,6 +148,20 @@ export const ProjectScenesPage: React.FC = () => {
 
       <main className="max-w-5xl mx-auto space-y-10">
         <SceneActions onCreate={handleCreateNewScene} />
+
+          <label
+              htmlFor="import-scene"
+              className="px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg cursor-pointer text-white font-semibold transition-all"
+          >
+              Import Scene
+          </label>
+          <input
+              id="import-scene"
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={handleImportScene}
+          />
 
         <SceneList
           scenes={scenes}

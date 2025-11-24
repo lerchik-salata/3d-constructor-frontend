@@ -193,6 +193,7 @@ const SceneEditorPage: React.FC = () => {
         <div>
             <SceneEditorHeader
                 projectId={currentProjectId}
+                sceneId={currentSceneId}
                 sceneName={sceneName}
                 commandManager={commandManager}
                 onUpdateObjects={() => setObjects(structuredClone(sceneManager.getObjects()))}
