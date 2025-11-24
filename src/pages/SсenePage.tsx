@@ -21,6 +21,7 @@ import { RemoveObjectCommand } from '../services/commands/RemoveObjectCommand';
 import { ChangeTextureCommand } from '../services/commands/ChangeTextureCommand';
 import { ShapesApi, type BasicShapeDto } from '../api/shapesApi';
 import type { ShapeType } from '../constants/shapes';
+import type { CustomShapeDto } from '../api/shapesApi';
 
 const initialSettings: ProjectSettings = {
     preset: 'city',
@@ -32,19 +33,20 @@ const initialSettings: ProjectSettings = {
 };
 
 const SceneEditorPage: React.FC = () => {
-    const { projectId, sceneId } = useParams<{ projectId: string, sceneId: string }>(); 
+    const { projectId, sceneId } = useParams<{ projectId: string, sceneId: string }>();
     const navigate = useNavigate();
 
     const [sceneSettings, setSceneSettings] = useState<ProjectSettings>(initialSettings);
+    const [customShapes, setCustomShapes] = useState<CustomShapeDto[]>([]);
     const [basicShapes, setBasicShapes] = useState<BasicShapeDto[]>([]);
 
     const currentProjectId = projectId ? parseInt(projectId) : null;
     const currentSceneId = sceneId ? parseInt(sceneId) : null;
-    const isNewScene = !currentSceneId; 
+    const isNewScene = !currentSceneId;
 
-    const [sceneManager] = useState(() => new SceneManager([])); 
+    const [sceneManager] = useState(() => new SceneManager([]));
     const [projectsManager] = useState(() => new ProjectManager());
-    const [objects, setObjects] = useState<SceneObject[]>([]); 
+    const [objects, setObjects] = useState<SceneObject[]>([]);
     const [textures, setTextures] = useState<Texture[]>([]);
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [mode, setMode] = useState<'translate' | 'rotate' | 'scale'>('translate');
@@ -61,15 +63,17 @@ const SceneEditorPage: React.FC = () => {
             }
 
             const loadedTextures = await textureApi.getAllTextures();
-            setTextures(loadedTextures);
-            sceneManager.setTextures(loadedTextures);
+            setTextures(structuredClone(loadedTextures));
+            sceneManager.setTextures(structuredClone(loadedTextures));
 
             const loadedProject = await projectsApi.getProjectById(currentProjectId);
-            setSceneSettings(loadedProject.settings);
+            setSceneSettings(structuredClone(loadedProject.settings));
 
             const shapes = await ShapesApi.getBasicShapes();
-            console.log('Loaded basic shapes:', shapes);
-            setBasicShapes(shapes);
+            setBasicShapes(structuredClone(shapes));
+
+            const custom = await ShapesApi.getCustomShapes();
+            setCustomShapes(structuredClone(custom));
 
             if (isNewScene) {
                 sceneManager.setObjects([]);
@@ -77,17 +81,13 @@ const SceneEditorPage: React.FC = () => {
                 setSceneName('New Scene');
                 showMessage('Started working on new scene.', 'info');
             } else {
-                showMessage(`Loading scene ID: ${currentSceneId}...`);
                 try {
                     const { objects: loadedObjects, name } = await sceneManager.loadScene(currentSceneId!, currentProjectId);
-                    
-                    setObjects([...loadedObjects]);
-                    console.log('Scene objects after load:', sceneManager.getObjects());
+                    setObjects(structuredClone(loadedObjects));
+                    console.log('Loaded scene objects:', loadedObjects);
                     setSelectedId(null);
-
                     setSceneName(name);
                     showMessage(`Scene "${name}" loaded.`, 'success');
-
                 } catch (err: unknown) {
                     console.error(err);
                     showMessage(`Error loading scene ID ${currentSceneId}`, 'error');
@@ -100,7 +100,6 @@ const SceneEditorPage: React.FC = () => {
 
         loadInitialScene();
     }, [currentSceneId, currentProjectId]);
-
 
     const handleSaveScene = async () => {
         if (!sceneName.trim() || !currentProjectId) {
@@ -115,29 +114,22 @@ const SceneEditorPage: React.FC = () => {
             if (isNewScene) {
                 savedScene = await sceneManager.createScene(sceneName, currentProjectId);
                 showMessage(`Scene "${savedScene.name}" created!`, 'success');
-
                 navigate(`/projects/${currentProjectId}/scenes/${savedScene.id}/edit`, { replace: true });
-
             } else {
-                console.log('Updating existing scene...');
                 savedScene = await sceneManager.updateScene(currentSceneId!, sceneName, currentProjectId);
                 showMessage(`Scene "${savedScene.name}" updated.`, 'success');
             }
-            
-            setSceneName(savedScene.name);
 
+            setSceneName(savedScene.name);
         } catch (err: unknown) {
             console.error(err);
             showMessage(err instanceof Error ? err.message : 'Unknown error occurred while saving', 'error');
         }
     };
-    
+
     const handleChangeColor = (id: number, color: string) => {
-        sceneManager.updateObjectColor(id, color); 
-        setObjects([...sceneManager.getObjects()]);
-        // const cmd = new ChangeColorCommand(sceneManager, id, color);
-        // commandManager.executeCommand(cmd);
-        // setObjects([...sceneManager.getObjects()]);
+        sceneManager.updateObjectColor(id, color);
+        setObjects(structuredClone(sceneManager.getObjects()));
     };
 
     const currentSelectedColor = objects.find(obj => obj.id === selectedId)?.color || '#FFFFFF';
@@ -145,34 +137,30 @@ const SceneEditorPage: React.FC = () => {
     const handleChangeTexture = (id: number, texture: number | null) => {
         const cmd = new ChangeTextureCommand(sceneManager, id, texture);
         commandManager.executeCommand(cmd);
-        setObjects([...sceneManager.getObjects()]);
-    }
+        setObjects(structuredClone(sceneManager.getObjects()));
+    };
 
     const currentSelectedTexture = objects.find(obj => obj.id === selectedId)?.textureId || null;
 
-    const handleAddObject = (type: ShapeType, params: Record<string, number>) => {
-        const cmd = new AddObjectCommand(sceneManager, type, params);
-        console.log('Adding object with params:', params);
+    const handleAddObject = (type: ShapeType, params: Record<string, number>, color?: string) => {
+        const cmd = new AddObjectCommand(sceneManager, type, params, color);
         commandManager.executeCommand(cmd);
-        setObjects([...sceneManager.getObjects()]);
+        setObjects(structuredClone(sceneManager.getObjects()));
     };
 
     const handleCopyObject = (id: number) => {
         const original = sceneManager.getObjects().find(obj => obj.id === id);
         if (!original) return;
-
         const cmd = new CopyObjectCommand(sceneManager, original);
         commandManager.executeCommand(cmd);
-        setObjects([...sceneManager.getObjects()]);
+        setObjects(structuredClone(sceneManager.getObjects()));
     };
 
     const handleRemoveObject = (id: number) => {
         if (id === null) return;
-
         const cmd = new RemoveObjectCommand(sceneManager, id);
         commandManager.executeCommand(cmd);
-
-        setObjects([...sceneManager.getObjects()]);
+        setObjects(structuredClone(sceneManager.getObjects()));
         if (selectedId === id) setSelectedId(null);
     };
 
@@ -183,20 +171,17 @@ const SceneEditorPage: React.FC = () => {
         scale: [number, number, number]
     ) => {
         sceneManager.updateObjectTransform(id, position, rotation, scale);
-        setObjects([...sceneManager.getObjects()]);
+        setObjects(structuredClone(sceneManager.getObjects()));
     };
 
     const handleUpdateProjectSettings = async (newSettings: ProjectSettings) => {
         if (!currentProjectId) return;
-
         try {
             showMessage('Saving project settings...', 'info');
-
             const updatedProject = await projectsManager.updateProject(currentProjectId, {
                 settings: newSettings
             });
-
-            setSceneSettings(updatedProject.settings);
+            setSceneSettings(structuredClone(updatedProject.settings));
             showMessage('Project settings saved', 'success');
         } catch (err: unknown) {
             console.error(err);
@@ -210,7 +195,7 @@ const SceneEditorPage: React.FC = () => {
                 projectId={currentProjectId}
                 sceneName={sceneName}
                 commandManager={commandManager}
-                onUpdateObjects={() => setObjects([...sceneManager.getObjects()])}
+                onUpdateObjects={() => setObjects(structuredClone(sceneManager.getObjects()))}
             />
 
             <Scene settings={sceneSettings}>
@@ -228,6 +213,7 @@ const SceneEditorPage: React.FC = () => {
                 setSceneName={setSceneName}
                 addObject={handleAddObject}
                 basicShapes={basicShapes}
+                customShapes={customShapes}
                 removeObject={handleRemoveObject}
                 copyObject={handleCopyObject}
                 mode={mode}

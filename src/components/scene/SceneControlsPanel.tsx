@@ -3,12 +3,14 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { Texture } from '../../types/texture';
 import type { ShapeType } from '../../constants/shapes';
 import type { BasicShapeDto } from '../../api/shapesApi';
+import type { CustomShapeDto } from '../../api/shapesApi';
 
 interface SceneControlsPanelProps {
   sceneName: string;
   setSceneName: (name: string) => void;
   basicShapes: BasicShapeDto[];
-  addObject: (type: ShapeType, params: Record<string, number>) => void;
+  customShapes: CustomShapeDto[];
+  addObject: (type: ShapeType, params: Record<string, number>, color?: string) => void;
   removeObject?: (id: number) => void;
   copyObject?: (id: number) => void;
   mode: 'translate' | 'rotate' | 'scale';
@@ -27,6 +29,7 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
   setSceneName,
   addObject,
   basicShapes,
+  customShapes,
   removeObject,
   copyObject,
   mode,
@@ -60,6 +63,21 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
                   className="py-2 px-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:scale-105 transform transition"
                 >
                   {shape.type.charAt(0).toUpperCase() + shape.type.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold">Custom Shapes</h3>
+            <div className="flex gap-3 flex-wrap">
+              {customShapes.map(shape => (
+                <button
+                  key={shape.id}
+                  onClick={() => addObject(shape.type as ShapeType, shape.params, shape?.color)}
+                  className="py-2 px-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl hover:scale-105 transform transition"
+                >
+                  {shape.name}
                 </button>
               ))}
             </div>

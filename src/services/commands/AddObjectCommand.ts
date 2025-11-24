@@ -7,15 +7,17 @@ export class AddObjectCommand implements Command {
   private sceneManager: SceneManager;
   private type: ShapeType;
   private params: Record<string, number>;
+  private color: string | undefined;
 
-  constructor(sceneManager: SceneManager, type: ShapeType, params: Record<string, number>) {
+  constructor(sceneManager: SceneManager, type: ShapeType, params: Record<string, number>, color?: string) {
     this.sceneManager = sceneManager;
     this.type = type;
     this.params = params;
+    this.color = color;
   }
 
   execute() {
-    const obj = this.sceneManager.addObject(this.type, this.params);
+    const obj = this.sceneManager.addObject(this.type, this.params, this.color);
     this.newObjectId = obj.id;
   }
 

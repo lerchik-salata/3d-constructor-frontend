@@ -54,7 +54,7 @@ const SceneShape: React.FC<SceneShapeProps> = ({
 
   const geometry = (() => {
     switch (type) {
-      case 'box':
+      case 'cube':
         return <boxGeometry args={[geometryParams.width, geometryParams.height, geometryParams.depth]} />;
       case 'sphere':
         return <sphereGeometry args={[geometryParams.radius, 32, 32]} />;

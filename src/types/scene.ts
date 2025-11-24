@@ -46,4 +46,6 @@ export interface SceneObjectCSharp {
   ScaleY: number;
   ScaleZ: number;
   Color: string;
+  TextureId?: string | null;
+  Params?: string;
 }

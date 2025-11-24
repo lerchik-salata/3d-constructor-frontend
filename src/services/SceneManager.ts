@@ -16,13 +16,13 @@ export class SceneManager {
     constructor(initialObjects: SceneObject[] = []) {
         this.objects = [];
         this.nextId = 1;
-        this.setObjects(initialObjects); 
+        this.setObjects(initialObjects);
     }
 
     setTextures(textures: Texture[]) {
         this.availableTextures = textures;
     }
-    
+
     getTextureUrl(textureId: number | null): string | undefined {
         if (!textureId) return undefined;
 
@@ -33,16 +33,12 @@ export class SceneManager {
         return match ? match[1] : undefined;
     }
 
-
     async getScenesByProjectId(projectId: number): Promise<LoadedScene[]> {
         return await sceneApi.getScenesByProjectId(projectId);
     }
 
     async createNewScene(projectId: number, name: string): Promise<LoadedScene> {
-        const newScene = {
-        Name: name,
-        Objects: [],
-        };
+        const newScene = { Name: name, Objects: [] };
         return await sceneApi.saveScene(newScene, projectId);
     }
 
@@ -51,20 +47,13 @@ export class SceneManager {
     }
 
     getObjects(): SceneObject[] {
-         return this.objects.map(obj => ({
-            ...obj,
-            textureUrl: this.getTextureUrl(obj.textureId)
-        }));
+        return this.objects.map(obj => structuredClone(obj));
     }
 
     getObject(id: number): SceneObject | undefined {
         const obj = this.objects.find(o => o.id === id);
         if (!obj) return undefined;
-
-        return {
-            ...obj,
-            textureUrl: this.getTextureUrl(obj.textureId)
-        };
+        return structuredClone(obj);
     }
 
     removeObject(id: number): void {
@@ -73,73 +62,69 @@ export class SceneManager {
 
     insertObjectAt(obj: SceneObject, index: number) {
         const objects = this.getObjects();
-        objects.splice(index, 0, obj);
+        objects.splice(index, 0, structuredClone(obj));
         this.setObjects(objects);
     }
 
     setObjects(newObjects: SceneObject[]) {
-        this.objects = [...newObjects];
+        this.objects = newObjects.map(obj => structuredClone(obj));
         this.nextId = newObjects.length ? Math.max(...newObjects.map(o => o.id)) + 1 : 1;
     }
 
-        addObject(type: ShapeType, params: Record<string, number>): SceneObject {
+    addObject(type: ShapeType, params: Record<string, number>, color?: string): SceneObject {
         const newObject: SceneObject = {
             id: this.nextId++,
             type,
-            params, 
+            params: structuredClone(params),
             position: [0, 2, 0],
             rotation: [0, 0, 0],
             scale: [1, 1, 1],
-            color: '#ffffff',
+            color: color || '#ffffff',
             textureId: null,
         };
 
         this.objects.push(newObject);
-        return newObject;
-        }
+        console.log('Added object:', structuredClone(newObject));
+        console.log('Current objects:', this.objects.map(o => structuredClone(o)));
+        return structuredClone(newObject);
+    }
 
     copyObject(originalId: number): SceneObject | null {
         const original = this.objects.find(o => o.id === originalId);
         if (!original) return null;
 
-        const copy: SceneObject = {
-            ...original,
-            id: this.nextId++,
-        };
+        const copy: SceneObject = structuredClone(original);
+        copy.id = this.nextId++;
         this.objects.push(copy);
-        return copy;
+        return structuredClone(copy);
     }
 
     getNextId(): number {
         return this.nextId;
     }
-    
+
     updateObjectTransform(id: number, position: [number, number, number], rotation: [number, number, number], scale: [number, number, number]): void {
         const obj = this.objects.find(o => o.id === id);
         if (obj) {
-            obj.position = position;
-            obj.rotation = rotation;
-            obj.scale = scale;
+            obj.position = structuredClone(position);
+            obj.rotation = structuredClone(rotation);
+            obj.scale = structuredClone(scale);
         }
     }
 
     updateObjectColor(id: number, color: string): void {
         const obj = this.objects.find(o => o.id === id);
-        if (obj) {
-            obj.color = color;
-        }
+        if (obj) obj.color = color;
     }
 
     updateObjectTexture(id: number, textureId: number | null): void {
         const obj = this.objects.find(o => o.id === id);
-        if (obj) {
-            obj.textureId = textureId;
-        }
+        if (obj) obj.textureId = textureId;
     }
 
     mapObjectsToCSharpFormat(): SceneObjectCSharp[] {
         return this.objects.map(obj => ({
-            Id: obj.id, 
+            Id: obj.id,
             Type: obj.type,
             PositionX: obj.position[0],
             PositionY: obj.position[1],
@@ -152,16 +137,17 @@ export class SceneManager {
             ScaleZ: obj.scale[2],
             Color: obj.color,
             TextureId: obj.textureId != null ? String(obj.textureId) : null,
+            Params: JSON.stringify(obj.params)
         }));
     }
 
     async loadScene(sceneId: number, projectId: number): Promise<{ objects: SceneObject[], name: string }> {
         const loadedScene = await sceneApi.getScene(sceneId, projectId);
-        
-        const newObjects = loadedScene.objects.map((obj) => ({
-            id: obj.id || this.nextId++, 
+
+        const newObjects = loadedScene.objects.map(obj => ({
+            id: obj.id || this.nextId++,
             type: obj.type as SceneObject['type'],
-            params: obj.params ?? {}, 
+            params: typeof obj.params === 'string' ? JSON.parse(obj.params) : structuredClone(obj.params ?? {}),
             position: [obj.positionX, obj.positionY, obj.positionZ] as [number, number, number],
             rotation: [obj.rotationX, obj.rotationY, obj.rotationZ] as [number, number, number],
             scale: [obj.scaleX, obj.scaleY, obj.scaleZ] as [number, number, number],
@@ -169,30 +155,27 @@ export class SceneManager {
             textureId: obj.hasOwnProperty('textureId') ? (obj as any).textureId : null,
         }));
 
-        this.setObjects(newObjects); 
-        console.log('Loaded scene objects:', this.getObjects());
+        this.setObjects(newObjects);
         return {
             objects: this.getObjects(),
-            name: loadedScene.name 
+            name: loadedScene.name
         };
     }
-    
-    async createScene(sceneName: string, projectId: number): Promise<LoadedScene> {
-        const data: CreateSceneData = { 
-            Name: sceneName, 
-            Objects: this.mapObjectsToCSharpFormat() 
+
+    async createScene(sceneName: string, projectId: number) {
+        const data: CreateSceneData = {
+            Name: sceneName,
+            Objects: this.mapObjectsToCSharpFormat()
         };
-        return await sceneApi.saveScene(data, projectId); 
+        return await sceneApi.saveScene(data, projectId);
     }
 
-    async updateScene(sceneId: number, sceneName: string, projectId: number): Promise<LoadedScene> {
-        const data: CreateSceneData = { 
-            Name: sceneName, 
-            Objects: this.mapObjectsToCSharpFormat() 
+    async updateScene(sceneId: number, sceneName: string, projectId: number) {
+        const data: CreateSceneData = {
+            Name: sceneName,
+            Objects: this.mapObjectsToCSharpFormat()
         };
-
-        const response = await sceneApi.updateScene(sceneId, data, projectId);
-        return response;
+        console.log('Updating scene with data:', data);
+        return await sceneApi.updateScene(sceneId, data, projectId);
     }
-
 }
