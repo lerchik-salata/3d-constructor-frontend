@@ -26,7 +26,7 @@ export const ShapeModal: React.FC<ShapeModalProps> = ({
 
   const [params, setParams] = useState(() => {
     switch (shapeType) {
-      case "box": return initialData?.params || { width: 1, height: 1, depth: 1 };
+      case "cube": return initialData?.params || { width: 1, height: 1, depth: 1 };
       case "sphere": return initialData?.params || { radius: 1 };
       case "cylinder": return initialData?.params || { radius: 1, height: 2 };
       case "cone": return initialData?.params || { radius: 1, height: 2 };

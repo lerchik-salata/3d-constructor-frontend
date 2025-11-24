@@ -22,7 +22,7 @@ const Shape: React.FC<Props> = ({ type, params, color }) => {
 
   const getGeometry = () => {
     switch (type) {
-      case "box":
+      case "cube":
         return <boxGeometry args={[params.width, params.height, params.depth]} />;
       case "sphere":
         return <sphereGeometry args={[params.radius, 32, 32]} />;
