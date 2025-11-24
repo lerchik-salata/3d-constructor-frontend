@@ -1,7 +1,7 @@
 import type { SceneObject, SceneObjectCSharp, LoadedScene } from '../types/scene';
 import { sceneApi } from '../api/sceneApi';
 import type { Texture } from '../types/texture';
-import { SHAPE_TYPES } from '../constants/shapes';
+import { type ShapeType } from '../constants/shapes';
 
 interface CreateSceneData {
     Name: string;
@@ -82,33 +82,21 @@ export class SceneManager {
         this.nextId = newObjects.length ? Math.max(...newObjects.map(o => o.id)) + 1 : 1;
     }
 
-    addObject(type: SceneObject['type']): SceneObject {
-        if (!SHAPE_TYPES.includes(type as any)) {
-            throw new Error(`Unsupported shape type: ${type}`);
-        }
-
-        const defaultColors: Record<string, string> = {
-            cube: 'hotpink',
-            sphere: '#3C78D8',
-            cylinder: '#6AA84F',
-            cone: '#FFAA00',
-            torus: '#AA00FF',
-            plane: '#CCCCCC',
-        };
-
+        addObject(type: ShapeType, params: Record<string, number>): SceneObject {
         const newObject: SceneObject = {
             id: this.nextId++,
             type,
+            params, 
             position: [0, 2, 0],
             rotation: [0, 0, 0],
             scale: [1, 1, 1],
-            color: defaultColors[type] || '#ffffff',
+            color: '#ffffff',
             textureId: null,
         };
+
         this.objects.push(newObject);
-        console.log('Added object:', newObject);
         return newObject;
-    }
+        }
 
     copyObject(originalId: number): SceneObject | null {
         const original = this.objects.find(o => o.id === originalId);
@@ -173,6 +161,7 @@ export class SceneManager {
         const newObjects = loadedScene.objects.map((obj) => ({
             id: obj.id || this.nextId++, 
             type: obj.type as SceneObject['type'],
+            params: obj.params ?? {}, 
             position: [obj.positionX, obj.positionY, obj.positionZ] as [number, number, number],
             rotation: [obj.rotationX, obj.rotationY, obj.rotationZ] as [number, number, number],
             scale: [obj.scaleX, obj.scaleY, obj.scaleZ] as [number, number, number],

@@ -10,15 +10,6 @@ interface SceneShapeProps {
   params?: Record<string, number>
 }
 
-const defaultParams: Record<ShapeType, Record<string, number>> = {
-  box: { width: 1, height: 1, depth: 1 },
-  sphere: { radius: 0.5 },
-  cylinder: { radius: 0.5, height: 1 },
-  cone: { radius: 0.5, height: 1 },
-  torus: { radius: 0.5, tube: 0.2 },
-  plane: { width: 2, height: 2 },
-};
-
 const SceneShape: React.FC<SceneShapeProps> = ({
   type,
   color = '#ffffff',
@@ -59,7 +50,7 @@ const SceneShape: React.FC<SceneShapeProps> = ({
     ? new THREE.MeshStandardMaterial({ map })
     : new THREE.MeshStandardMaterial({ color });
 
-  const geometryParams = { ...defaultParams[type], ...params };
+  const geometryParams = { ...params }; 
 
   const geometry = (() => {
     switch (type) {

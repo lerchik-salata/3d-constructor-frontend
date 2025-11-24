@@ -1,19 +1,21 @@
 import type { Command } from './Command';
 import { SceneManager } from '../SceneManager';
-import type { SceneObject } from '../../types/scene';
+import type { ShapeType } from '../../constants/shapes';
 
 export class AddObjectCommand implements Command {
   private newObjectId: number | null = null;
   private sceneManager: SceneManager;
-  private type: SceneObject['type'];
+  private type: ShapeType;
+  private params: Record<string, number>;
 
-  constructor(sceneManager: SceneManager, type: SceneObject['type']) {
+  constructor(sceneManager: SceneManager, type: ShapeType, params: Record<string, number>) {
     this.sceneManager = sceneManager;
     this.type = type;
+    this.params = params;
   }
 
   execute() {
-    const obj = this.sceneManager.addObject(this.type);
+    const obj = this.sceneManager.addObject(this.type, this.params);
     this.newObjectId = obj.id;
   }
 

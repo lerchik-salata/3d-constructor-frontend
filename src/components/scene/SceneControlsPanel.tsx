@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import type { SceneObject } from '../../types/scene';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { Texture } from '../../types/texture';
-import { SHAPE_TYPES } from '../../constants/shapes';
+import type { ShapeType } from '../../constants/shapes';
+import type { BasicShapeDto } from '../../api/shapesApi';
 
 interface SceneControlsPanelProps {
   sceneName: string;
   setSceneName: (name: string) => void;
-  addObject: (type: SceneObject['type']) => void;
+  basicShapes: BasicShapeDto[];
+  addObject: (type: ShapeType, params: Record<string, number>) => void;
   removeObject?: (id: number) => void;
   copyObject?: (id: number) => void;
   mode: 'translate' | 'rotate' | 'scale';
@@ -25,6 +26,7 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
   sceneName,
   setSceneName,
   addObject,
+  basicShapes,
   removeObject,
   copyObject,
   mode,
@@ -50,17 +52,17 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
         <div className="space-y-6">
           <div className="space-y-2">
             <h3 className="font-semibold">Add Object</h3>
-         <div className="flex gap-3 flex-wrap">
-            {SHAPE_TYPES.map((shape) => (
-              <button
-                key={shape}
-                onClick={() => addObject(shape as any)} 
-                className="py-2 px-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:scale-105 transform transition"
-              >
-                {shape.charAt(0).toUpperCase() + shape.slice(1)}
-              </button>
-            ))}
-          </div>
+            <div className="flex gap-3 flex-wrap">
+              {basicShapes.map(shape => (
+                <button
+                  key={shape.id}
+                  onClick={() => addObject(shape.type as ShapeType, shape.params)}
+                  className="py-2 px-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:scale-105 transform transition"
+                >
+                  {shape.type.charAt(0).toUpperCase() + shape.type.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2">

@@ -1,14 +1,15 @@
-export type SceneObjectType = 'Cube' | 'Sphere' | 'Cylinder';
+import type { ShapeType } from "../constants/shapes";
 
 export interface SceneObject {
   id: number;
-  type: SceneObjectType;
+  type: ShapeType;
   position: [number, number, number];
   rotation: [number, number, number];
   scale: [number, number, number];
   color: string;
   textureId: number | null;
   textureUrl?: string;
+  params?: Record<string, number>;
 }
 
 export interface LoadedScene {
@@ -16,7 +17,7 @@ export interface LoadedScene {
   name: string;
   objects: {
     id: number;
-    type: string;
+    type: ShapeType;
     positionX: number;
     positionY: number;
     positionZ: number;
@@ -27,12 +28,14 @@ export interface LoadedScene {
     scaleY: number;
     scaleZ: number;
     color: string;
+    textureId: number | null;
+    params?: Record<string, number>;
   }[];
 }
 
 export interface SceneObjectCSharp {
   Id: number
-  Type: string;
+  Type: ShapeType;
   PositionX: number;
   PositionY: number;
   PositionZ: number;

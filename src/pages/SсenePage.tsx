@@ -19,6 +19,8 @@ import { AddObjectCommand } from '../services/commands/AddObjectCommand';
 import { CopyObjectCommand } from '../services/commands/CopyObjectCommand';
 import { RemoveObjectCommand } from '../services/commands/RemoveObjectCommand';
 import { ChangeTextureCommand } from '../services/commands/ChangeTextureCommand';
+import { ShapesApi, type BasicShapeDto } from '../api/shapesApi';
+import type { ShapeType } from '../constants/shapes';
 
 const initialSettings: ProjectSettings = {
     preset: 'city',
@@ -34,6 +36,7 @@ const SceneEditorPage: React.FC = () => {
     const navigate = useNavigate();
 
     const [sceneSettings, setSceneSettings] = useState<ProjectSettings>(initialSettings);
+    const [basicShapes, setBasicShapes] = useState<BasicShapeDto[]>([]);
 
     const currentProjectId = projectId ? parseInt(projectId) : null;
     const currentSceneId = sceneId ? parseInt(sceneId) : null;
@@ -63,7 +66,10 @@ const SceneEditorPage: React.FC = () => {
 
             const loadedProject = await projectsApi.getProjectById(currentProjectId);
             setSceneSettings(loadedProject.settings);
-            console.log('Loaded project settings:', loadedProject);
+
+            const shapes = await ShapesApi.getBasicShapes();
+            console.log('Loaded basic shapes:', shapes);
+            setBasicShapes(shapes);
 
             if (isNewScene) {
                 sceneManager.setObjects([]);
@@ -144,8 +150,9 @@ const SceneEditorPage: React.FC = () => {
 
     const currentSelectedTexture = objects.find(obj => obj.id === selectedId)?.textureId || null;
 
-    const handleAddObject = (type: SceneObject['type']) => {
-        const cmd = new AddObjectCommand(sceneManager, type);
+    const handleAddObject = (type: ShapeType, params: Record<string, number>) => {
+        const cmd = new AddObjectCommand(sceneManager, type, params);
+        console.log('Adding object with params:', params);
         commandManager.executeCommand(cmd);
         setObjects([...sceneManager.getObjects()]);
     };
@@ -220,6 +227,7 @@ const SceneEditorPage: React.FC = () => {
                 sceneName={sceneName}
                 setSceneName={setSceneName}
                 addObject={handleAddObject}
+                basicShapes={basicShapes}
                 removeObject={handleRemoveObject}
                 copyObject={handleCopyObject}
                 mode={mode}

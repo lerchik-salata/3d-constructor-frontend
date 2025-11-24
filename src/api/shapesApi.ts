@@ -12,6 +12,7 @@ export interface BasicShapeDto {
   id: number;
   name: string;
   type: string;
+  params: Record<string, number>;
 }
 
 export const ShapesApi = {

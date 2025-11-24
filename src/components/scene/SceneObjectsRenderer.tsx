@@ -41,7 +41,7 @@ const SceneObjectsRenderer: React.FC<Props> = ({
             type={obj.type as any}
             color={obj.color}
             textureUrl={obj.textureUrl}
-            // params={obj.params} 
+           params={obj.params ?? {}}
           />
         </TransformableObject>
       ))}
