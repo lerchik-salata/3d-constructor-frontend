@@ -2,10 +2,10 @@ import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
 import { OrbitControlsProvider, useOrbitControls } from '../../context/OrbitControlsContext';
-import type { SceneSettings } from '../../types/scene';
+import type { ProjectSettings } from '../../types/project';
 
 interface SceneProps {
-  settings: SceneSettings;
+  settings: ProjectSettings;
   children?: React.ReactNode;
 }
 
@@ -23,7 +23,7 @@ const Scene: React.FC<SceneProps> = ({ settings, children }) => {
   );
 };
 
-const SceneContent: React.FC<{ settings: SceneSettings; children?: React.ReactNode }> = ({ settings, children }) => {
+const SceneContent: React.FC<{ settings: ProjectSettings; children?: React.ReactNode }> = ({ settings, children }) => {
   const { controlsRef } = useOrbitControls();
 
   return (

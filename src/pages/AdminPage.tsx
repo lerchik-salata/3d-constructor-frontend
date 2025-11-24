@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { LayoutGrid, Images } from "lucide-react";
 import { TexturesPage } from "./TexturesPage";
+import { ShapesPage } from "./ShapesPage";
 
 export const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("textures");
 
   const tabs = [
     { id: "textures", label: "Textures", icon: Images },
-    { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
+     { id: "shapes", label: "Shapes", icon: LayoutGrid }
   ];
 
   return (
@@ -36,9 +37,7 @@ export const AdminPage: React.FC = () => {
 
         <section className="pt-6">
           {activeTab === "textures" && <TexturesPage />}
-          {activeTab === "dashboard" && (
-            <div className="text-gray-400 text-center py-10 text-xl">Dashboard coming soon...</div>
-          )}
+          {activeTab === "shapes" && <ShapesPage />}
         </section>
       </motion.div>
     </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { SceneObject } from '../../types/scene';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { Texture } from '../../types/texture';
+import { SHAPE_TYPES } from '../../constants/shapes';
 
 interface SceneControlsPanelProps {
   sceneName: string;
@@ -49,17 +50,17 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
         <div className="space-y-6">
           <div className="space-y-2">
             <h3 className="font-semibold">Add Object</h3>
-            <div className="flex gap-3">
-              {['Cube', 'Sphere', 'Cylinder'].map(type => (
-                <button
-                  key={type}
-                  onClick={() => addObject(type as SceneObject['type'])}
-                  className="flex-1 py-2 px-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:scale-105 transform transition"
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
+         <div className="flex gap-3 flex-wrap">
+            {SHAPE_TYPES.map((shape) => (
+              <button
+                key={shape}
+                onClick={() => addObject(shape as any)} 
+                className="py-2 px-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:scale-105 transform transition"
+              >
+                {shape.charAt(0).toUpperCase() + shape.slice(1)}
+              </button>
+            ))}
+          </div>
           </div>
 
           <div className="space-y-2">

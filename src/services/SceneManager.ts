@@ -1,6 +1,7 @@
 import type { SceneObject, SceneObjectCSharp, LoadedScene } from '../types/scene';
 import { sceneApi } from '../api/sceneApi';
 import type { Texture } from '../types/texture';
+import { SHAPE_TYPES } from '../constants/shapes';
 
 interface CreateSceneData {
     Name: string;
@@ -82,13 +83,26 @@ export class SceneManager {
     }
 
     addObject(type: SceneObject['type']): SceneObject {
+        if (!SHAPE_TYPES.includes(type as any)) {
+            throw new Error(`Unsupported shape type: ${type}`);
+        }
+
+        const defaultColors: Record<string, string> = {
+            cube: 'hotpink',
+            sphere: '#3C78D8',
+            cylinder: '#6AA84F',
+            cone: '#FFAA00',
+            torus: '#AA00FF',
+            plane: '#CCCCCC',
+        };
+
         const newObject: SceneObject = {
             id: this.nextId++,
             type,
             position: [0, 2, 0],
             rotation: [0, 0, 0],
             scale: [1, 1, 1],
-            color: type === 'Cube' ? 'hotpink' : type === 'Sphere' ? '#3C78D8' : '#6AA84F',
+            color: defaultColors[type] || '#ffffff',
             textureId: null,
         };
         this.objects.push(newObject);
