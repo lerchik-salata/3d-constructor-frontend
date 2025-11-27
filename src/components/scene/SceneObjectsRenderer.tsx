@@ -23,6 +23,8 @@ const SceneObjectsRenderer: React.FC<Props> = ({
   setSelectedId,
   updateObjectTransform,
 }) => {
+
+  console.log('Rendering SceneObjectsRenderer with objects:', objects);
   return (
     <>
       {objects.map(obj => (

@@ -190,7 +190,7 @@ const SceneEditorPage: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className='h-screen overflow-hidden'>
             <SceneEditorHeader
                 projectId={currentProjectId}
                 sceneId={currentSceneId}

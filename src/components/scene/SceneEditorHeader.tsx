@@ -38,7 +38,7 @@ const SceneEditorHeader: React.FC<SceneEditorHeaderProps> = ({
     };
 
     return (
-        <header className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 rounded-b-lg shadow-md mb-4">
+        <header className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 shadow-md">
             <div className="text-lg md:text-xl font-bold">
                 Project ID: <span className="font-mono">{projectId}</span>
             </div>

@@ -45,7 +45,7 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="controls-panel bg-gray-50 text-white shadow-xl rounded-2xl p-5 w-full md:w-80 space-y-6">
+    <div className="controls-panel bg-gray-50 text-white shadow-xl rounded-2xl p-5 w-full md:w-80 space-y-6 max-h-180 overflow-y-auto">
       <div className="flex justify-between items-center cursor-pointer" onClick={() => setCollapsed(!collapsed)}>
         <h2 className="text-2xl font-bold border-b pb-2 flex-1">Scene Constructor</h2>
         {collapsed ? <ChevronDown className="w-5 h-5 text-gray-300" /> : <ChevronUp className="w-5 h-5 text-gray-300" />}
@@ -128,9 +128,7 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
           </div>
 
           <div className="space-y-2">
-            <h3 className="font-semibold">Object Properties</h3>
-            <label className="flex flex-col text-gray-600 text-sm">
-              Color:
+            <h3 className="font-semibold">Color</h3>
               <input
                 type="color"
                 value={selectedObjectColor}
@@ -138,11 +136,10 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
                   if (selectedObjectId !== null) changeObjectColor(selectedObjectId, e.target.value);
                 }}
                 disabled={selectedObjectId === null}
-                className={`w-full h-10 mt-1 rounded-xl border-2 ${
+                className={`w-full h-10 rounded-xl border-2 ${
                   selectedObjectId === null ? 'cursor-not-allowed opacity-50 border-gray-300' : 'cursor-pointer border-indigo-400'
                 }`}
               />
-            </label>
             {selectedObjectId === null && (
               <p className="text-xs mt-1">Select an object to edit its properties.</p>
             )}

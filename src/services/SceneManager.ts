@@ -47,13 +47,20 @@ export class SceneManager {
     }
 
     getObjects(): SceneObject[] {
-        return this.objects.map(obj => structuredClone(obj));
+        return this.objects.map(obj => ({
+            ...obj,
+            textureUrl: this.getTextureUrl(obj.textureId)
+        }));
     }
 
     getObject(id: number): SceneObject | undefined {
         const obj = this.objects.find(o => o.id === id);
         if (!obj) return undefined;
-        return structuredClone(obj);
+
+        return {
+            ...obj,
+            textureUrl: this.getTextureUrl(obj.textureId)
+        };
     }
 
     removeObject(id: number): void {

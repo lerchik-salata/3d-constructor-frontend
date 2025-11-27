@@ -17,7 +17,7 @@ const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({ settings, onCha
   };
 
   return (
-    <div className="controls-panel bg-gray-800 text-white shadow-xl rounded-2xl p-5 w-full md:w-96 space-y-6 fixed top-20 left-4 z-50">
+    <div className="controls-panel bg-gray-800 text-white shadow-xl rounded-2xl p-5 w-full md:w-80 space-y-6 fixed top-20 left-4 z-50 max-h-180 overflow-y-auto">
       <div className="flex justify-between items-center cursor-pointer" onClick={() => setCollapsed(!collapsed)}>
         <h2 className="text-2xl font-bold border-b pb-2 flex-1">Project Settings</h2>
         {collapsed ? <ChevronDown className="w-5 h-5 text-gray-300" /> : <ChevronUp className="w-5 h-5 text-gray-300" />}
