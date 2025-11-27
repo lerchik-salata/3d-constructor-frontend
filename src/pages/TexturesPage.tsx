@@ -14,6 +14,7 @@ export const TexturesPage: React.FC = () => {
   const [selectedTexture, setSelectedTexture] = useState<Texture | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState('');
+  const [isUploading, setIsUploading] = useState(false); 
 
   const fetchTextures = useCallback(async () => {
     setIsLoading(true);
@@ -22,7 +23,7 @@ export const TexturesPage: React.FC = () => {
       const data = await texturesManager.getAllTextures();
       setTextures(data);
     } catch (err) {
-      console.error(err);
+    console.error(err);
       setError('Failed to load textures');
     } finally {
       setIsLoading(false);
@@ -37,27 +38,31 @@ export const TexturesPage: React.FC = () => {
     if (!file || !name) {
       alert('Please provide a name and select a file');
       return;
-    }
+  }
 
+    setIsUploading(true);
     const formData = new FormData();
     formData.append('Image', file);
     formData.append('Name', name);
 
     try {
-      const newTexture = await texturesManager.addTexture(formData);
-      setTextures(prev => [...prev, newTexture]);
-      setFile(null);
-      setName('');
-      alert('Texture uploaded!');
+        const newTexture = await texturesManager.addTexture(formData);
+        setTextures(prev => [...prev, newTexture]);
+        setFile(null);
+        setName('');
+        alert('Texture uploaded!');
     } catch (err) {
-      console.error(err);
-      alert('Upload failed');
+        console.error(err);
+        alert('Upload failed');
+    } finally {
+        setIsUploading(false);
     }
   };
 
   const handleUpdate = async () => {
     if (!selectedTexture) return;
 
+    setIsUploading(true);
     const formData = new FormData();
     if (file) formData.append('Image', file);
     if (name) formData.append('Name', name);
@@ -72,7 +77,10 @@ export const TexturesPage: React.FC = () => {
     } catch (err) {
       console.error(err);
       alert('Update failed');
+    } finally {
+      setIsUploading(false);
     }
+
   };
 
   const handleDelete = async (id: number) => {
@@ -90,12 +98,8 @@ export const TexturesPage: React.FC = () => {
   if (error) return <div className="text-center py-20 text-red-500">{error}</div>;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-10">
-      <section className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700/50 shadow-lg">
-        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-          <ImagePlus size={22} className="text-blue-400" />
-          Upload Texture
-        </h2>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-10"> <section className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700/50 shadow-lg"> <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2"> <ImagePlus size={22} className="text-blue-400" />
+    Upload Texture </h2>
 
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <input
@@ -113,9 +117,14 @@ export const TexturesPage: React.FC = () => {
 
           <button
             onClick={selectedTexture ? handleUpdate : handleUpload}
-            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg font-medium"
+            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg font-medium flex items-center justify-center"
+            disabled={isUploading} 
           >
-            {selectedTexture ? 'Update' : 'Upload'}
+            {isUploading ? (
+              <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-5 h-5"></span>
+            ) : (
+              selectedTexture ? 'Update' : 'Upload'
+            )}
           </button>
         </div>
       </section>
@@ -126,5 +135,6 @@ export const TexturesPage: React.FC = () => {
         onDelete={handleDelete}
       />
     </motion.div>
+
   );
 };

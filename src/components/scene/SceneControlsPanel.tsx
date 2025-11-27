@@ -18,6 +18,7 @@ interface SceneControlsPanelProps {
   saveScene: () => Promise<void>;
   selectedObjectId: number | null;
   changeObjectColor: (id: number, color: string) => void;
+  changeColor: (id: number, color: string) => void;
   selectedObjectColor: string;
   textures: Texture[];
   changeObjectTexture: (id: number, textureId: number | null) => void;
@@ -37,6 +38,7 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
   saveScene,
   selectedObjectId,
   changeObjectColor,
+  changeColor,
   selectedObjectColor,
   textures,
   changeObjectTexture,
@@ -132,9 +134,14 @@ const SceneControlsPanel: React.FC<SceneControlsPanelProps> = ({
               <input
                 type="color"
                 value={selectedObjectColor}
-                onChange={e => {
-                  if (selectedObjectId !== null) changeObjectColor(selectedObjectId, e.target.value);
+                onMouseUp={e => {
+                  if (selectedObjectId !== null) changeObjectColor(selectedObjectId, e.currentTarget.value);
                 }}
+                  onChange={e => {
+                    if (selectedObjectId !== null) {
+                      changeColor(selectedObjectId, e.target.value);
+                    }
+                  }}
                 disabled={selectedObjectId === null}
                 className={`w-full h-10 rounded-xl border-2 ${
                   selectedObjectId === null ? 'cursor-not-allowed opacity-50 border-gray-300' : 'cursor-pointer border-indigo-400'

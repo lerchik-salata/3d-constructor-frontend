@@ -19,6 +19,7 @@ import { AddObjectCommand } from '../services/commands/AddObjectCommand';
 import { CopyObjectCommand } from '../services/commands/CopyObjectCommand';
 import { RemoveObjectCommand } from '../services/commands/RemoveObjectCommand';
 import { ChangeTextureCommand } from '../services/commands/ChangeTextureCommand';
+import { TransformObjectCommand } from '../services/commands/TransformObjectCommand';
 import { ShapesApi, type BasicShapeDto } from '../api/shapesApi';
 import type { ShapeType } from '../constants/shapes';
 import type { CustomShapeDto } from '../api/shapesApi';
@@ -128,9 +129,15 @@ const SceneEditorPage: React.FC = () => {
     };
 
     const handleChangeColor = (id: number, color: string) => {
-        sceneManager.updateObjectColor(id, color);
+        const cmd = new ChangeColorCommand(sceneManager, id, color);
+        commandManager.executeCommand(cmd);
         setObjects(structuredClone(sceneManager.getObjects()));
     };
+
+    const changeObjectColor = (id: number, color: string) => {
+        sceneManager.updateObjectColor(id, color);
+        setObjects(structuredClone(sceneManager.getObjects()));
+    };  
 
     const currentSelectedColor = objects.find(obj => obj.id === selectedId)?.color || '#FFFFFF';
 
@@ -169,8 +176,9 @@ const SceneEditorPage: React.FC = () => {
         position: [number, number, number],
         rotation: [number, number, number],
         scale: [number, number, number]
-    ) => {
-        sceneManager.updateObjectTransform(id, position, rotation, scale);
+        ) => {
+        const cmd = new TransformObjectCommand(sceneManager, id, { position, rotation, scale });
+        commandManager.executeCommand(cmd);
         setObjects(structuredClone(sceneManager.getObjects()));
     };
 
@@ -222,6 +230,7 @@ const SceneEditorPage: React.FC = () => {
                 saveScene={handleSaveScene}
                 selectedObjectId={selectedId}
                 changeObjectColor={handleChangeColor}
+                changeColor={changeObjectColor}
                 selectedObjectColor={currentSelectedColor}
                 textures={textures}
                 changeObjectTexture={handleChangeTexture}
